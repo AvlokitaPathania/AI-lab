@@ -1,0 +1,165 @@
+print("Avlokita Pathania-1WA24CS070")
+
+
+def display_board(board):
+    print(f"\n {board[0]} | {board[1]} | {board[2]} ")
+    print("---+---+---")
+    print(f" {board[3]} | {board[4]} | {board[5]} ")
+    print("---+---+---")
+    print(f" {board[6]} | {board[7]} | {board[8]} \n")
+
+
+def check_win(board, player):
+    win_conditions = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ]
+
+    for condition in win_conditions:
+        if (board[condition[0]] == board[condition[1]] ==
+                board[condition[2]] == player):
+            return True
+
+    return False
+
+
+def is_full(board):
+    return ' ' not in board
+
+
+
+def computer_move(board):
+
+    
+    for i in range(9):
+        if board[i] == ' ':
+            board[i] = 'O'
+
+            if check_win(board, 'O'):
+                return i
+
+            board[i] = ' '
+
+  
+    for i in range(9):
+        if board[i] == ' ':
+            board[i] = 'X'
+
+            if check_win(board, 'X'):
+                board[i] = 'O'
+                return i
+
+            board[i] = ' '
+
+    
+    for i in range(9):
+        if board[i] == ' ':
+            board[i] = 'O'
+            return i
+
+    return -1
+
+
+
+def find_all_games(board, turn, path_cost, result):
+
+    
+    if check_win(board, 'O'):
+        result["computer_wins"] += 1
+        result["max_path_cost"] = max(
+            result["max_path_cost"], path_cost
+        )
+        return
+
+    
+    if check_win(board, 'X'):
+        result["human_wins"] += 1
+        result["max_path_cost"] = max(
+            result["max_path_cost"], path_cost
+        )
+        return
+
+    
+    if is_full(board):
+        result["draws"] += 1
+        result["max_path_cost"] = max(
+            result["max_path_cost"], path_cost
+        )
+        return
+
+  
+    if turn == 'X':
+
+        for i in range(9):
+
+            if board[i] == ' ':
+
+                board[i] = 'X'
+
+               
+                find_all_games(
+                    board,
+                    'O',
+                    path_cost + 1,
+                    result
+                )
+
+                
+                board[i] = ' '
+
+   
+    else:
+
+        new_board = board.copy()
+
+        computer_move(new_board)
+
+      
+        find_all_games(
+            new_board,
+            'X',
+            path_cost + 1,
+            result
+        )
+
+
+def tic_tac_toe():
+
+   
+    board = [
+        'O', ' ', 'X',
+        'X', ' ', ' ',
+        'X', 'O', 'O'
+    ]
+
+    print("Tic-Tac-Toe!")
+    print("Initial Board:")
+    display_board(board)
+
+    result = {
+        "computer_wins": 0,
+        "human_wins": 0,
+        "draws": 0,
+        "max_path_cost": 0
+    }
+
+   
+    find_all_games(
+        board,
+        'X',
+        0,
+        result
+    )
+
+    print("\n========== RESULTS ==========")
+
+    print("Number of times Computer Wins :", result["computer_wins"])
+    print("Number of times Human Wins    :", result["human_wins"])
+    print("Number of Draws               :", result["draws"])
+
+    print("\nHighest Path Cost :", result["max_path_cost"])
+
+
+if __name__ == "__main__":
+    tic_tac_toe()
