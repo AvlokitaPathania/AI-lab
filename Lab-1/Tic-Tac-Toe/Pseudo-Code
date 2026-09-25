@@ -1,0 +1,15 @@
+Start
+Create 3x3 board
+while game != over
+    display board
+    ask player to input x:
+       if place empty: put x 
+       else: display "move elsewhere"
+   after player computer moves 
+   if row or column or diagonal = X:
+       display "Player wins"
+   else if row or column or diagonal = 0:
+        display "Computer wins"
+   else:
+        display "draw"
+Stop
