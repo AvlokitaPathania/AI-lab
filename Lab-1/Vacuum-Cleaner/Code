@@ -1,0 +1,75 @@
+import random
+import time
+
+class Room:
+    def __init__(self, name, is_dirty=False):
+        self.name = name
+        self.is_dirty = is_dirty
+
+    def __str__(self):
+        return f"Room {self.name} (Dirty: {self.is_dirty})"
+
+class VacuumCleaner:
+    def __init__(self, rooms, initial_location):
+        self.rooms = rooms  # Dictionary of rooms, e.g., {1: Room1_obj, 2: Room2_obj}
+        self.location = initial_location # Room object
+        self.actions_taken = []
+
+    def perceive(self):
+        return self.location.is_dirty
+
+    def clean(self):
+        self.location.is_dirty = False
+        action_msg = f"Cleaning Room {self.location.name}"
+        print(action_msg)
+        self.actions_taken.append(action_msg)
+
+    def move(self, target_room_name):
+        if target_room_name in self.rooms:
+            action_msg = f"Moving from Room {self.location.name} to Room {target_room_name}"
+            print(action_msg)
+            self.actions_taken.append(action_msg)
+            self.location = self.rooms[target_room_name]
+        else:
+            print(f"Error: Room {target_room_name} does not exist.")
+
+    def run(self):
+        print(f"Vacuum cleaner starting in Room {self.location.name}.")
+        print(f"Initial State: Room 1: {self.rooms[1].is_dirty}, Room 2: {self.rooms[2].is_dirty}")
+        self.actions_taken.append(f"Initial State: Room 1: {self.rooms[1].is_dirty}, Room 2: {self.rooms[2].is_dirty}")
+
+        while True:
+            time.sleep(1) # Simulate time for action
+            current_room_name = self.location.name
+
+            if self.perceive():
+                self.clean()
+            else:
+                # Room is clean, decide to move or stop
+                other_room_name = 1 if current_room_name == 2 else 2
+                if self.rooms[other_room_name].is_dirty:
+                    self.move(other_room_name)
+                else:
+                    # Both rooms are clean
+                    final_msg = "Both rooms are clean. Stopping."
+                    print(final_msg)
+                    self.actions_taken.append(final_msg)
+                    break
+            print(f"Current State: Room 1: {self.rooms[1].is_dirty}, Room 2: {self.rooms[2].is_dirty}\n")
+
+        print("\n--- Actions Log ---")
+        for action in self.actions_taken:
+            print(action)
+
+room1 = Room(1, is_dirty=True) # Room 1 starts dirty
+room2 = Room(2, is_dirty=True) # Room 2 starts dirty
+
+rooms = {1: room1, 2: room2}
+
+# Create a vacuum cleaner instance, starting in Room 2 as per pseudocode
+vacuum = VacuumCleaner(rooms, initial_location=rooms[2])
+
+# Run the simulation
+vacuum.run()
+
+print("Avlokita Pathania - 1WA24CS070")
