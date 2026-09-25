@@ -1,0 +1,138 @@
+import random
+
+def create_board():
+    return [[' ' for _ in range(3)] for _ in range(3)]
+
+def display_board(board):
+    for row in board:
+        print('|' + '|'.join(row) + '|')
+    print()
+
+board = create_board()
+display_board(board)
+def is_valid_move(board, row, col):
+    return 0 <= row < 3 and 0 <= col < 3 and board[row][col] == ' '
+
+def make_move(board, row, col, player):
+    board[row][col] = player
+
+def check_win(board, player):
+    # Check rows
+    for row in board:
+        if all([cell == player for cell in row]):
+            return True
+    # Check columns
+    for col in range(3):
+        if all([board[row][col] == player for row in range(3)]):
+            return True
+    # Check diagonals
+    if (board[0][0] == player and board[1][1] == player and board[2][2] == player) or \
+       (board[0][2] == player and board[1][1] == player and board[2][0] == player):
+        return True
+    return False
+
+def check_draw(board):
+    for row in board:
+        for cell in row:
+            if cell == ' ':
+                return False
+    return True
+def get_player_move(board):
+    while True:
+        try:
+            move = input("Enter your move (row and column, e.g., 1 2): ").split()
+            row, col = int(move[0]) - 1, int(move[1]) - 1
+            if is_valid_move(board, row, col):
+                return row, col
+            else:
+                print("Invalid move. That spot is already taken or out of bounds. Try again.")
+        except (ValueError, IndexError):
+            print("Invalid input. Please enter row and column numbers (e.g., 1 2).")
+
+def get_computer_move(board):
+    available_moves = []
+    for r in range(3):
+        for c in range(3):
+            if board[r][c] == ' ':
+                available_moves.append((r, c))
+    if available_moves:
+        return random.choice(available_moves)
+    return None # Should not happen if game is not over
+
+def play_game():
+    board = create_board()
+    player_turn = True # True for player (X), False for computer (O)
+
+    print("Welcome to Tic Tac Toe!")
+
+    # Hardcoded initial moves
+    # Player X positions (1-indexed: 1 3, 2 1, 3 1)
+    make_move(board, 0, 2, 'X') # (1,3)
+    make_move(board, 1, 0, 'X') # (2,1)
+    make_move(board, 2, 0, 'X') # (3,1)
+
+    # Computer O positions (1-indexed: 1 1, 3 2, 3 3)
+    make_move(board, 0, 0, 'O') # (1,1)
+    make_move(board, 2, 1, 'O') # (3,2)
+    make_move(board, 2, 2, 'O') # (3,3)
+
+    # Display board after hardcoded moves
+    print("Board after initial hardcoded moves:")
+    display_board(board)
+
+    # Determine who's turn it is based on the number of moves made
+    # 3 'X' and 3 'O' have been made, so it's currently Player X's turn if no one has won yet.
+    # If the game is not over, it's player X's turn to make the 4th move.
+    # We assume 'X' always starts first in general, and after 3 moves for each, it's X's turn again.
+    player_turn = True
+
+    # Check for win/draw immediately after hardcoded moves
+    if check_win(board, 'X'):
+        display_board(board)
+        print("Player X wins (from hardcoded moves)!")
+        return
+    if check_win(board, 'O'):
+        display_board(board)
+        print("Computer O wins (from hardcoded moves)!")
+        return
+    if check_draw(board):
+        display_board(board)
+        print("It's a draw (from hardcoded moves)!")
+        return
+
+    while True:
+        display_board(board)
+
+        if player_turn:
+            print("Player X's turn:")
+            row, col = get_player_move(board)
+            make_move(board, row, col, 'X')
+            if check_win(board, 'X'):
+                display_board(board)
+                print("Player X wins!")
+                break
+        else:
+            print("Computer O's turn:")
+            # The original code had a bug here where if computer_move returns None, it still proceeds.
+            # Adding a check for None to prevent errors if all cells are filled.
+            computer_row, computer_col = get_computer_move(board)
+            if computer_row is not None and computer_col is not None:
+                make_move(board, computer_row, computer_col, 'O')
+                if check_win(board, 'O'):
+                    display_board(board)
+                    print("Computer O wins!")
+                    break
+            else: # This means the board is full, and it must be a draw
+                display_board(board)
+                print("It's a draw!")
+                break
+
+        if check_draw(board):
+            display_board(board)
+            print("It's a draw!")
+            break
+
+        player_turn = not player_turn
+
+play_game()
+print("Avlokita Pathania - 1WA24CS070")
