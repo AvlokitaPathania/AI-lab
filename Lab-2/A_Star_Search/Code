@@ -1,0 +1,101 @@
+import heapq
+
+class Node:
+    def __init__(self, state, g=0, h=0, parent=None):
+        self.state = state
+        self.g = g
+        self.h = h
+        self.f = g + h
+        self.parent = parent
+
+    def __lt__(self, other):
+        return self.f < other.f
+
+def h(state, goal):
+    """Calculates misplaced tiles (excluding blank tile 0)."""
+    return sum(1 for r in range(3) for c in range(3) 
+               if state[r][c] != 0 and state[r][c] != goal[r][c])
+
+def find_blank(state):
+    """Finds row, col of the empty tile (0)."""
+    for r in range(3):
+        for c in range(3):
+            if state[r][c] == 0:
+                return r, c
+
+def get_neighbors(state):
+    """Generates valid next states by moving the blank tile UP, DOWN, LEFT, RIGHT."""
+    r, c = find_blank(state)
+    neighbors = []
+    moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+    
+    for dr, dc in moves:
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < 3 and 0 <= nc < 3:
+            new_state = [list(row) for row in state]
+            new_state[r][c], new_state[nr][nc] = new_state[nr][nc], new_state[r][c]
+            neighbors.append(tuple(tuple(row) for row in new_state))
+            
+    return neighbors
+
+def reconstruct_path(node):
+    path = []
+    curr = node
+    while curr:
+        path.append(curr)
+        curr = curr.parent
+    return path[::-1]
+
+def a_star_8puzzle(start, goal):
+    start_tuple = tuple(tuple(row) for row in start)
+    goal_tuple = tuple(tuple(row) for row in goal)
+
+    start_node = Node(start_tuple, g=0, h=h(start_tuple, goal_tuple))
+    
+    pq = []
+    heapq.heappush(pq, start_node)
+    
+    g_costs = {start_tuple: 0}
+
+    while pq:
+        current_node = heapq.heappop(pq)
+
+        if current_node.state == goal_tuple:
+            return reconstruct_path(current_node)
+
+        for nxt in get_neighbors(current_node.state):
+            g = current_node.g + 1
+            
+            if nxt not in g_costs or g < g_costs[nxt]:
+                g_costs[nxt] = g
+                child_node = Node(nxt, g=g, h=h(nxt, goal_tuple), parent=current_node)
+                heapq.heappush(pq, child_node)
+
+    return None
+
+# --- Inputs ---
+initial_state = [
+    [2, 8, 3],
+    [1, 6, 4],
+    [7, 0, 5]
+]
+
+goal_state = [
+    [1, 2, 3],
+    [8, 0, 4],
+    [7, 6, 5]
+]
+
+# --- Execution ---
+path_nodes = a_star_8puzzle(initial_state, goal_state)
+
+if path_nodes:
+    print(f"Solution found in {len(path_nodes) - 1} steps:\n")
+    for step, node in enumerate(path_nodes):
+        print(f"--- Step {step} ---")
+        for row in node.state:
+            print(list(row))
+        print(f"g(n) = {node.g}, h(n) = {node.h} => f(n) = {node.f}\n")
+
+
+print("Avlokita Pathania - 1WA24CS070")
