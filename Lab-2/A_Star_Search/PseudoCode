@@ -1,0 +1,18 @@
+A_Star_8Puzzle(start, goal):
+    pq = PriorityQueue([(0 + h(start, goal), Node(start, g=0))])
+    visited = set()
+
+    while pq:
+        _, node = pq.pop_min()
+        if node.state == goal: return reconstruct_path(node)
+       
+        visited.add(node.state)
+        for move in get_moves(node.state):
+            nxt = apply_move(node.state, move)
+            if nxt not in visited:
+                g = node.g + 1
+                pq.push(g + h(nxt, goal), Node(nxt, g=g, parent=node))
+
+h(state, goal):
+    return sum(1 for r in range(3) for c in range(3)
+               if state[r][c] and state[r][c] != goal[r][c])
