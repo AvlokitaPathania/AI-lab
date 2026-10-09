@@ -1,0 +1,85 @@
+class Node:
+    def __init__(self, state, depth=0, parent=None):
+        self.state = state
+        self.depth = depth
+        self.parent = parent
+
+def find_blank(state):
+    """Finds row, col of the blank tile (0)."""
+    for r in range(3):
+        for c in range(3):
+            if state[r][c] == 0:
+                return r, c
+
+def get_neighbors(state):
+    """Generates valid adjacent states by moving the blank tile."""
+    r, c = find_blank(state)
+    neighbors = []
+    # Moves in standard direction order (e.g., Up, Down, Left, Right)
+    moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    
+    for dr, dc in moves:
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < 3 and 0 <= nc < 3:
+            new_state = [list(row) for row in state]
+            new_state[r][c], new_state[nr][nc] = new_state[nr][nc], new_state[r][c]
+            neighbors.append(tuple(tuple(row) for row in new_state))
+            
+    return neighbors
+
+def reconstruct_path(node):
+    path = []
+    curr = node
+    while curr:
+        path.append(curr)
+        curr = curr.parent
+    return path[::-1]
+
+def dfs_8puzzle(start, goal):
+    start_tuple = tuple(tuple(row) for row in start)
+    goal_tuple = tuple(tuple(row) for row in goal)
+
+    root = Node(start_tuple, depth=0)
+    
+    # Use explicit Stack (LIFO) for DFS
+    stack = [root]
+    visited = {start_tuple}
+
+    while stack:
+        current_node = stack.pop()  # Pop the top (deepest) element
+
+        if current_node.state == goal_tuple:
+            return reconstruct_path(current_node)
+
+        for nxt in get_neighbors(current_node.state):
+            if nxt not in visited:
+                visited.add(nxt)
+                child_node = Node(nxt, depth=current_node.depth + 1, parent=current_node)
+                stack.append(child_node)
+
+    return None
+
+# --- Inputs ---
+initial_state = [
+    [1, 2, 3],
+    [0, 4, 6],
+    [7, 5, 8]
+]
+
+goal_state = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 0]
+]
+
+# --- Execution ---
+path_nodes = dfs_8puzzle(initial_state, goal_state)
+
+if path_nodes:
+    print(f"Solution found using DFS in {len(path_nodes) - 1} steps:\n")
+    for step, node in enumerate(path_nodes):
+        print(f"--- Step {step} (Depth {node.depth}) ---")
+        for row in node.state:
+            print(list(row))
+        print()
+print("Avlokita Pathania - 1WA24CS070")
