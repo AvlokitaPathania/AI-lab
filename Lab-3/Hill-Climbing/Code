@@ -1,0 +1,70 @@
+def calculate_cost(state):
+    cost = 0
+    n = len(state)
+    for i in range(n):
+        for j in range(i + 1, n):
+            if state[i] == state[j]:
+                cost += 1
+            elif abs(state[i] - state[j]) == abs(i - j):
+                cost += 1
+    return cost
+
+def get_best_neighbor(state):
+    n = len(state)
+    best_state = state[:]
+    best_cost = calculate_cost(state)
+    for i in range(n):
+        for j in range(i + 1, n):
+            neighbor = state[:]
+            neighbor[i], neighbor[j] = neighbor[j], neighbor[i]
+            neighbor_cost = calculate_cost(neighbor)
+           
+            if neighbor_cost < best_cost:
+                best_cost = neighbor_cost
+                best_state = neighbor
+               
+    return best_state, best_cost
+
+def print_board(state):
+    """Prints the chessboard visually."""
+    n = len(state)
+    for row in range(n):
+        line = ""
+        for col in range(n):
+            if state[col] == row:
+                line += " Q "
+            else:
+                line += " . "
+        print(line)
+    print()
+
+def hill_climbing(initial_state):
+    current_state = initial_state[:]
+    current_cost = calculate_cost(current_state)
+    step = 0
+
+    print(f"Initial State: {current_state} | Cost: {current_cost}\n")
+    print_board(current_state)
+
+    while True:
+        neighbor_state, neighbor_cost = get_best_neighbor(current_state)
+        if neighbor_cost >= current_cost:
+            break
+           
+        step += 1
+        current_state = neighbor_state
+        current_cost = neighbor_cost
+        print(f"Step {step}: State = {current_state} | Cost = {current_cost}")
+        print_board(current_state)
+
+    if current_cost == 0:
+        print("Goal state reached successfully!")
+    else:
+        print("Stuck in a local minimum/plateau.")
+
+    return current_state
+
+if __name__ == "__main__":
+    initial_board = [3, 1, 2, 0]
+    solution = hill_climbing(initial_board)
+print("Avlokita Pathania - 1WA24CS070")
