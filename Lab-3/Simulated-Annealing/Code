@@ -1,0 +1,84 @@
+
+
+import math
+import random
+
+def calculate_cost(state):
+
+    cost = 0
+    n = len(state)
+    for i in range(n):
+        for j in range(i + 1, n):
+            if state[i] == state[j]:
+                cost += 1
+            elif abs(state[i] - state[j]) == abs(i - j):
+                cost += 1
+    return cost
+
+def get_random_neighbour(state):
+
+    next_state = state[:]
+    col = random.randint(0, len(state) - 1)
+    current_row = next_state[col]
+    
+    possible_rows = [r for r in range(len(state)) if r != current_row]
+    next_state[col] = random.choice(possible_rows)
+    
+    return next_state
+
+def simulated_annealing(initial_state, t_initial=1000.0, t_min=1e-3, alpha=0.995):
+
+    current = initial_state[:]
+    current_cost = calculate_cost(current)
+    
+    T = t_initial
+
+    while T > t_min and current_cost > 0:
+        next_state = get_random_neighbour(current)
+        next_cost = calculate_cost(next_state)
+        
+        delta_E = current_cost - next_cost
+        
+        if delta_E > 0:
+            current = next_state[:]
+            current_cost = next_cost
+        else:
+            p = math.exp(delta_E / T)
+            if random.random() < p:
+                current = next_state[:]
+                current_cost = next_cost
+
+        T *= alpha
+
+    return current, current_cost
+
+def print_grid(state):
+    """Prints the state in an 8x8 chessboard format."""
+    n = len(state)
+    print("  " + " ".join([str(i) for i in range(n)]))
+    print(" +" + "--" * n + "+")
+    for row in range(n):
+        line = f"{row}|"
+        for col in range(n):
+            if state[col] == row:
+                line += " Q"
+            else:
+                line += " ."
+        line += " |"
+        print(line)
+    print(" +" + "--" * n + "+")
+
+if __name__ == "__main__":
+    initial_board = [2, 4, 6, 1, 7, 0, 5, 3]
+    initial_cost = calculate_cost(initial_board)
+    
+    print("================ INITIAL STATE ================")
+    print(f"State: {initial_board} | Cost = {initial_cost}")
+    print_grid(initial_board)
+    
+    final_state, final_cost = simulated_annealing(initial_board)
+    
+    print("\n================ GOAL STATE ================")
+    print(f"State: {final_state} | Cost = {final_cost}")
+    print_grid(final_state)
+print("Avlokita Pathania - 1WA24CS070")
