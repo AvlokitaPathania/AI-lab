@@ -1,5 +1,5 @@
 from itertools import product
-
+print("Avlokita Pathania -1WA24CS070")
 def implies(a, b):
     return not a or b
 
@@ -12,10 +12,36 @@ def entails(query):
             return False
     return True
 
+def display_truth_table():
+    print("\nP Q R | Q->P | P->~Q | QVR | KB")
+    print("-----------------------------------")
+
+    for p, q, r in product([True, False], repeat=3):
+        s1 = implies(q, p)
+        s2 = implies(p, not q)
+        s3 = q or r
+        kb = KB(p, q, r)
+
+        values = [p, q, r, s1, s2, s3, kb]
+        print(" ".join("T" if x else "F" for x in values[:3]),
+              "|  ", "T" if s1 else "F",
+              "  |   ", "T" if s2 else "F",
+              "  | ", "T" if s3 else "F",
+              " | ", "T" if kb else "F")
+
+    print("\nModels where KB is TRUE:")
+
+    for p, q, r in product([True, False], repeat=3):
+        if KB(p, q, r):
+            print(f"(P={p}, Q={q}, R={r})")
+
+
+display_truth_table()
+
 while True:
-    print("\n1. R")
-    print("2. R -> P")
-    print("3. Q -> R")
+    print("\n1. Does KB entail R?")
+    print("2. Does KB entail R -> P?")
+    print("3. Does KB entail Q -> R?")
     print("4. Exit")
 
     choice = input("Enter your choice: ")
@@ -38,7 +64,3 @@ while True:
         print("KB entails the query")
     else:
         print("KB does not entail the query")
-
-
-
-print("Avlokita Pathania 1WA24CS070")
