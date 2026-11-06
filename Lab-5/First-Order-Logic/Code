@@ -1,0 +1,155 @@
+
+import re
+
+def is_variable(term):
+    name, args = term
+    return len(args) == 0 and name[0].islower()
+
+
+def substitute(term, subs):
+    name, args = term
+
+    if is_variable(term) and name in subs:
+        return substitute(subs[name], subs)
+
+    return (name, tuple(substitute(arg, subs) for arg in args))
+
+def occurs(variable, term, subs):
+    term = substitute(term, subs)
+
+    if is_variable(term):
+        return term[0] == variable
+
+    return any(occurs(variable, arg, subs)
+               for arg in term[1])
+
+def parse(expression):
+    tokens = re.findall(r'[A-Za-z_]\w*|[(),]', expression)
+    position = [0]
+
+    def parse_term():
+        if position[0] >= len(tokens):
+            raise ValueError("Invalid expression")
+
+        name = tokens[position[0]]
+        position[0] += 1
+
+        args = []
+
+        if position[0] < len(tokens) and tokens[position[0]] == '(':
+            position[0] += 1
+
+            args.append(parse_term())
+
+            while position[0] < len(tokens) and tokens[position[0]] == ',':
+                position[0] += 1
+                args.append(parse_term())
+
+            if position[0] >= len(tokens) or tokens[position[0]] != ')':
+                raise ValueError("Missing closing bracket")
+
+            position[0] += 1
+
+        return (name, tuple(args))
+
+    result = parse_term()
+
+    if position[0] != len(tokens):
+        raise ValueError("Invalid expression")
+
+    return result
+
+
+def display(term):
+    name, args = term
+
+    if not args:
+        return name
+
+    return name + "(" + ", ".join(display(a) for a in args) + ")"
+
+
+def unify(term1, term2, subs):
+
+    term1 = substitute(term1, subs)
+    term2 = substitute(term2, subs)
+
+    if term1 == term2:
+        return True
+
+    if is_variable(term1):
+        variable = term1[0]
+
+        if occurs(variable, term2, subs):
+            return False
+
+        subs[variable] = term2
+        return True
+
+    if is_variable(term2):
+        variable = term2[0]
+
+        if occurs(variable, term1, subs):
+            return False
+
+        subs[variable] = term1
+        return True
+    if term1[0] != term2[0]:
+        return False
+
+    if len(term1[1]) != len(term2[1]):
+        return False
+
+    for a, b in zip(term1[1], term2[1]):
+        if not unify(a, b, subs):
+            return False
+
+    return True
+
+def main():
+
+    print("FIRST ORDER LOGIC - UNIFICATION")
+    print("--------------------------------")
+
+    exp1 = input("Enter first expression: ")
+    exp2 = input("Enter second expression: ")
+
+    try:
+        term1 = parse(exp1)
+        term2 = parse(exp2)
+
+        substitutions = {}
+
+        print("\nExpression 1:", display(term1))
+        print("Expression 2:", display(term2))
+
+        if unify(term1, term2, substitutions):
+
+            print("\nUnification Successful!")
+
+            print("\nMost General Unifier (MGU):")
+
+            if substitutions:
+                for variable in sorted(substitutions):
+                    value = substitute(
+                        substitutions[variable],
+                        substitutions
+                    )
+                    print(variable, "=", display(value))
+            else:
+                print("No substitutions required.")
+
+            print("\nUnified Expression:")
+            print(display(substitute(term1, substitutions)))
+
+        else:
+            print("\nUnification Failed!")
+            print("The expressions cannot be unified.")
+
+    except (ValueError, IndexError):
+        print("\nInvalid expression entered!")
+
+
+if __name__ == "__main__":
+    main()
+print("Avlokita Pathania - 1WA24CS070")
